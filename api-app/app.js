@@ -13,6 +13,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 require('./app/routes/users')(app)
+require('./app/routes/pegawais')(app)
 
 sequelize.sync().then(() => {
     console.log('Database & tables synced!');

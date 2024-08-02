@@ -1,8 +1,9 @@
 'use strict';
 const {
-  Model
+  Model, DataTypes
 } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
+const sequelize = require('../config/database')
+
   class Pegawai extends Model {
     static associate(models) {
       Pegawai.belongsTo(models.Golongan, {
@@ -38,5 +39,5 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Pegawai',
   });
-  return Pegawai;
-};
+
+  module.exports = Pegawai
