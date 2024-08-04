@@ -18,8 +18,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 require('./app/routes/users')(app)
 require('./app/routes/pegawais')(app)
 require('./app/routes/unitkerjas')(app)
-require('./app/routes/golongans')(app)
-require('./app/routes/eselons')(app)
 
 sequelize.sync().then(() => {
     console.log('Database & tables synced!');

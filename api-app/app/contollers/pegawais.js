@@ -12,8 +12,8 @@ exports.getPegawai = async (req, res) => {
 
 exports.postPegawai = async (req, res) => {
     const {
-        nip, nama, tempatlahir, alamat, tanggalLahir, jenisKelamin, golonganId,
-        eselonId, tempatTugas, agama, unitKerjaId, noHp, npwp, foto
+        nip, nama, tempatLahir, alamat, tanggalLahir, jenisKelamin, golongan,
+        eselon, tempatTugas, agama, unitKerjaId, noHp, npwp, foto
     } = req.body
 
     console.log(req.body)
@@ -22,12 +22,12 @@ exports.postPegawai = async (req, res) => {
         const newPegawai = await Pegawai.create({
             nip,
             nama,
-            tempatlahir,
+            tempatLahir,
             alamat,
             tanggalLahir,
             jenisKelamin,
-            golonganId,
-            eselonId,
+            golongan,
+            eselon,
             tempatTugas,
             agama,
             unitKerjaId,
@@ -47,8 +47,8 @@ exports.postPegawai = async (req, res) => {
 
 exports.editPegawai = async (req, res) => {
     const {
-        nip, nama, tempatlahir, alamat, tanggalLahir, jenisKelamin, golonganId,
-        eselonId, tempatTugas, agama, unitKerjaId, noHp, npwp, foto
+        nip, nama, tempatLahir, alamat, tanggalLahir, jenisKelamin, golongan,
+        eselon, tempatTugas, agama, unitKerjaId, noHp, npwp, foto
     } = req.body
 
     const { id } = req.params
@@ -63,12 +63,12 @@ exports.editPegawai = async (req, res) => {
 
         pegawai.nip = nip;
         pegawai.nama = nama;
-        pegawai.tempatlahir = tempatlahir;
+        pegawai.tempatLahir = tempatLahir;
         pegawai.alamat = alamat;
         pegawai.tanggalLahir = tanggalLahir;
         pegawai.jenisKelamin = jenisKelamin;
-        pegawai.golonganId = golonganId;
-        pegawai.eselonId = eselonId;
+        pegawai.golongan = golongan;
+        pegawai.eselon = eselon;
         pegawai.tempatTugas = tempatTugas;
         pegawai.agama = agama;
         pegawai.unitKerjaId = unitKerjaId;

@@ -15,7 +15,7 @@ module.exports = {
       nama: {
         type: Sequelize.STRING
       },
-      tempatlahir: {
+      tempatLahir: {
         type: Sequelize.STRING
       },
       alamat: {
@@ -27,15 +27,11 @@ module.exports = {
       jenisKelamin: {
         type: Sequelize.STRING
       },
-      golonganId: {
-        type: Sequelize.INTEGER,
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+      golongan: {
+        type: Sequelize.STRING,
       },
-      eselonId: {
-        type: Sequelize.INTEGER,
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+      eselon: {
+        type: Sequelize.STRING,
       },
       tempatTugas: {
         type: Sequelize.STRING
