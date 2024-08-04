@@ -103,3 +103,17 @@ exports.deletePegawai = async (req, res) => {
         res.status(500).json({message: 'delete data failed!'})
     }
 }
+
+exports.getPegawaiByUnitKerja = async (req, res) => {
+    const { unitKerjaId } = req.params
+
+    try {
+        const pegawai = await Pegawai.findAll({
+            where: { unitKerjaId }
+        })
+        res.status(200).json({pegawai})
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({message: 'Unable to get Pegawai Data by unit kerja'})
+    }
+}

@@ -3,9 +3,10 @@ module.exports = (app) => {
     const controller = require('../contollers/pegawais')
 
     router.get('/pegawais', controller.getPegawai)
-    router.post('/pegawais', controller.postPegawai)
+    router.post('/pegawais/add', controller.postPegawai)
     router.put('/pegawais/:id', controller.editPegawai)
     router.delete('/pegawais/:id', controller.deletePegawai)
+    router.get('/pegawais/unit-kerja/:unitKerjaId', controller.getPegawaiByUnitKerja)
 
     app.use('/api', router)
 

@@ -1,8 +1,8 @@
 'use strict';
 const {
-  Model
+  Model, DataTypes
 } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
+const sequelize = require('../config/database')
   class Eselon extends Model {
     static associate(models) {
       Eselon.hasMany(models.Pegawai, {
@@ -17,5 +17,5 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Eselon',
   });
-  return Eselon;
-};
+  
+module.exports = Eselon
