@@ -1,4 +1,5 @@
 const Pegawai = require('../../models/pegawai')
+const upload = require('../../multerConfig')
 
 exports.getPegawai = async (req, res) => {
     try {
@@ -10,40 +11,47 @@ exports.getPegawai = async (req, res) => {
     }
 }
 
-exports.postPegawai = async (req, res) => {
-    const {
-        nip, nama, tempatLahir, alamat, tanggalLahir, jenisKelamin, golongan,
-        eselon, tempatTugas, agama, unitKerjaId, noHp, npwp, foto
-    } = req.body
+exports.postPegawai = 
+    async (req, res) => {
+        console.log('req.file:', req.file);   // Debugging
+        console.log('req.body:', req.body);   // Debugging
+        const {
+            nip, nama, tempatLahir, alamat, tanggalLahir, jenisKelamin, golongan,
+            eselon, tempatTugas, agama, unitKerjaId, noHp, npwp
+        } = req.body
 
-    console.log(req.body)
-      
-    try {
-        const newPegawai = await Pegawai.create({
-            nip,
-            nama,
-            tempatLahir,
-            alamat,
-            tanggalLahir,
-            jenisKelamin,
-            golongan,
-            eselon,
-            tempatTugas,
-            agama,
-            unitKerjaId,
-            noHp,
-            npwp,
-            foto
-        })
+        const foto = req.file ? req.file.filename : null
+    
+        console.log(req.body)
+        console.log('foto', foto)
+          
+        try {
+            const newPegawai = await Pegawai.create({
+                nip,
+                nama,
+                tempatLahir,
+                alamat,
+                tanggalLahir,
+                jenisKelamin,
+                golongan,
+                eselon,
+                tempatTugas,
+                agama,
+                unitKerjaId,
+                noHp,
+                npwp,
+                foto
+            })
+    
+            console.log('newPegawai:',newPegawai)
+    
+            res.status(201).json({newPegawai, message: 'Berhasil ditambahkan!'})
+        } catch (error) {
+            console.log(error)
+            res.status(500).json({error})
+        }
+    }   
 
-        console.log('newPegawai:',newPegawai)
-
-        res.status(201).json({newPegawai, message: 'Berhasil ditambahkan!'})
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({error})
-    }
-}
 
 exports.editPegawai = async (req, res) => {
     const {
