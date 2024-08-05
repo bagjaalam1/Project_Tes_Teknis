@@ -25,20 +25,6 @@ import VerticalNavLink from '@layouts/components/VerticalNavLink.vue'
         to: '/unit-kerja',
       }"
     />
-
-    <VerticalNavLink
-      :item="{
-        title: 'Eselon',
-        to: '/Eselon',
-      }"
-    />
-
-    <VerticalNavLink
-      :item="{
-        title: 'Golongan',
-        to: '/Golongan',
-      }"
-    />
   </VerticalNavGroup>
 
   <!-- 👉 Apps & Pages -->

@@ -75,5 +75,10 @@ export const icons = {
   aliases,
   sets: {
     iconify,
+    ri: {
+      component: (props) => {
+        return h('i', { class: `ri-${props.icon}` });
+      },
+    },
   },
 }

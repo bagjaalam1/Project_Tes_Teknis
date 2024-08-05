@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const goToAccountSettings = () => {
-  router.push('/Add-Pegawai');
+  router.push('/add-pegawai');
 };
 </script>
 

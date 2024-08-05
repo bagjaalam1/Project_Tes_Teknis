@@ -7,6 +7,7 @@ import { themes } from './theme'
 // Styles
 import '@core/scss/template/libs/vuetify/index.scss'
 import 'vuetify/styles'
+import 'remixicon/fonts/remixicon.css';
 
 export default defineNuxtPlugin(nuxtApp => {
   const vuetify = createVuetify({
@@ -15,7 +16,7 @@ export default defineNuxtPlugin(nuxtApp => {
       IconBtn: VBtn,
     },
     defaults,
-    icons,
+    icons: icons,
     theme: {
       defaultTheme: 'light',
       themes,

@@ -1,48 +1,20 @@
-<script>
-  export default {
-    data () {
-      return {
-        search: '',
-        items: [
-          {
-            name: 'Nebula GTX 3080',
-            image: '1.png',
-            price: 699.99,
-            rating: 5,
-            stock: true,
-          },
-          {
-            name: 'Galaxy RTX 3080',
-            image: '2.png',
-            price: 799.99,
-            rating: 4,
-            stock: false,
-          },
-          {
-            name: 'Orion RX 6800 XT',
-            image: '3.png',
-            price: 649.99,
-            rating: 3,
-            stock: true,
-          },
-          {
-            name: 'Vortex RTX 3090',
-            image: '4.png',
-            price: 1499.99,
-            rating: 4,
-            stock: true,
-          },
-          {
-            name: 'Cosmos GTX 1660 Super',
-            image: '5.png',
-            price: 299.99,
-            rating: 4,
-            stock: false,
-          },
-        ],
-      }
-    },
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const search = ref('')
+const items = ref([])
+
+const fetchData = async () => {
+  try {
+    const response = await axios.get('http://localhost:3001/api/pegawais')
+    items.value = response.data
+    console.log(items.value)
+  } catch (error) {
+    console.log(error.message)
   }
+}
+onMounted(fetchData)
 </script>
 
 <template>
@@ -52,69 +24,68 @@
       Daftar Pegawai
 
 
-    <client-only>
-      <v-combobox
-        clearable
-        chips
-        multiple
-        label="Combobox"
-        :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
-        class="ml-12"
-        density="compact"
-      ></v-combobox>
-    </client-only>
+      <client-only>
+        <v-combobox clearable chips multiple label="Combobox"
+          :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']" class="ml-12"
+          density="compact"></v-combobox>
+      </client-only>
 
       <v-spacer></v-spacer>
 
-      <v-text-field
-        v-model="search"
-        density="compact"
-        label="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="solo-filled"
-        flat
-        hide-details
-        single-line
-      ></v-text-field>
+      <v-text-field v-model="search" density="compact" label="Search" prepend-inner-icon="mdi-magnify"
+        variant="solo-filled" flat hide-details single-line></v-text-field>
     </v-card-title>
 
     <v-divider></v-divider>
     <v-data-table v-model:search="search" :items="items">
-      <template v-slot:header.stock>
-        <div class="text-end">Stock</div>
+
+      <template v-slot:headers>
+        <tr>
+          <th>NIP</th>
+          <th>Nama</th>
+          <th>L/P</th>
+          <th>Golongan</th>
+          <th>Eselon</th>
+          <th>Unit Kerja</th>
+          <th>Action</th>
+        </tr>
       </template>
 
-      <template v-slot:item.image="{ item }">
-        <v-card class="my-2" elevation="2" rounded>
-          <v-img
-            :src="`https://cdn.vuetifyjs.com/docs/images/graphics/gpus/${item.image}`"
-            height="64"
-            cover
-          ></v-img>
-        </v-card>
+      <template v-slot:item="{ item }">
+        <tr>
+          <td>{{ item.nip }}</td>
+          <td>{{ item.nama }}</td>
+          <td>{{ item.jenisKelamin }}</td>
+          <td>{{ item.golongan }}</td>
+          <td>{{ item.eselon }}</td>
+          <td>{{ item.unitKerjaId }}</td>
+          <td>
+          <td class="text-center">
+            <div class="d-flex justify-center align-center">
+              <v-btn :to="`/dashboard/edit/${item.id}`" class="no-background">
+                <i class="ri-pencil-line" style="font-size: 24px; margin-right: 8px; color: limegreen"></i>
+              </v-btn>
+              <v-btn :to="`/dashboard/detail/${item.id}`" class="no-background">
+                <i class="ri-article-line" style="font-size: 24px; margin-right: 8px; color:darkcyan"></i>
+              </v-btn>
+              <v-btn icon @click="deleteItem(item.id)" class="no-background">
+                  <i class="ri-delete-bin-6-line" style="font-size: 24px; color: red;"></i>
+                </v-btn>
+            </div>
+          </td>
+
+          </td>
+        </tr>
       </template>
 
-      <template v-slot:item.rating="{ item }">
-        <v-rating
-          :model-value="item.rating"
-          color="orange-darken-2"
-          density="compact"
-          size="small"
-          readonly
-        ></v-rating>
-      </template>
 
-      <template v-slot:item.stock="{ item }">
-        <div class="text-end">
-          <v-chip
-            :color="item.stock ? 'green' : 'red'"
-            :text="item.stock ? 'In stock' : 'Out of stock'"
-            class="text-uppercase"
-            size="small"
-            label
-          ></v-chip>
-        </div>
-      </template>
     </v-data-table>
   </v-card>
 </template>
+
+<style scoped>
+.no-background {
+  background: none !important;
+  box-shadow: none !important;
+}
+</style>
