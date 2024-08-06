@@ -4,12 +4,13 @@ import authV1MaskDark from '@images/pages/auth-v1-mask-dark.png'
 import authV1MaskLight from '@images/pages/auth-v1-mask-light.png'
 import authV1Tree2 from '@images/pages/auth-v1-tree-2.png'
 import authV1Tree from '@images/pages/auth-v1-tree.png'
+import axios from 'axios'
 
 const form = ref({
   username: '',
   email: '',
   password: '',
-  privacyPolicies: false,
+  repassword: '',
 })
 
 const vuetifyTheme = useTheme()
@@ -19,12 +20,27 @@ const authThemeMask = computed(() => {
 })
 
 const isPasswordVisible = ref(false)
+const isRepasswordVisible = ref(false)
+
+const register = async () => {
+  try {
+    const response = await axios.post('http://localhost:3001/api/register', {
+      username: form.value.username,
+      email: form.value.email,
+      password: form.value.password,
+      repassword: form.value.repassword
+    })
+
+    this.$router.push('/login')
+  } catch (error) {
+    console.error('Registration failed:', error)
+  }
+}
 
 definePageMeta({ layout: 'blank' })
 </script>
 
 <template>
-  <!-- eslint-disable vue/no-v-html -->
 
   <div class="auth-wrapper d-flex align-center justify-center pa-4">
     <VCard
@@ -39,14 +55,15 @@ definePageMeta({ layout: 'blank' })
       </VCardText>
 
       <VCardText>
-        <VForm @submit.prevent="() => {}">
+        <VForm @submit.prevent="register">
           <VRow>
             <!-- Username -->
             <VCol cols="12">
               <VTextField
                 v-model="form.username"
                 label="Username"
-                placeholder="Johndoe"
+                placeholder="Username"
+                required
               />
             </VCol>
             <!-- email -->
@@ -54,8 +71,9 @@ definePageMeta({ layout: 'blank' })
               <VTextField
                 v-model="form.email"
                 label="Email"
-                placeholder="johndoe@email.com"
+                placeholder="example@email.com"
                 type="email"
+                required
               />
             </VCol>
 
@@ -68,29 +86,26 @@ definePageMeta({ layout: 'blank' })
                 :type="isPasswordVisible ? 'text' : 'password'"
                 :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                 @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                required
               />
-              <div class="d-flex align-center my-6">
-                <VCheckbox
-                  id="privacy-policy"
-                  v-model="form.privacyPolicies"
-                  inline
-                />
-                <VLabel
-                  for="privacy-policy"
-                  style="opacity: 1;"
-                >
-                  <span class="me-1">I agree to</span>
-                  <a
-                    href="javascript:void(0)"
-                    class="text-primary"
-                  >privacy policy & terms</a>
-                </VLabel>
-              </div>
+            </VCol>
 
+            <VCol cols="12">
+              <VTextField
+                v-model="form.repassword"
+                label="Re-password"
+                placeholder="············"
+                :type="isRepasswordVisible ? 'text' : 'password'"
+                :append-inner-icon="isRepasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                @click:append-inner="isRepasswordVisible = !isRepasswordVisible"
+                required
+              />
+
+              <div class="d-flex align-center my-6">
+              </div>
               <VBtn
                 block
                 type="submit"
-                to="/"
               >
                 Sign up
               </VBtn>

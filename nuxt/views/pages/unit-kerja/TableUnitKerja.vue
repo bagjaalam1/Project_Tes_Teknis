@@ -1,35 +1,3 @@
-<script>
-  export default {
-    data () {
-      return {
-        search: '',
-        items: [
-          {
-            name: 'Nebula GTX 3080',
-            image: '1.png',
-          },
-          {
-            name: 'Galaxy RTX 3080',
-            image: '2.png',
-          },
-          {
-            name: 'Orion RX 6800 XT',
-            image: '3.png',
-          },
-          {
-            name: 'Vortex RTX 3090',
-            image: '4.png',
-          },
-          {
-            name: 'Cosmos GTX 1660 Super',
-            image: '5.png',
-          },
-        ],
-      }
-    },
-  }
-</script>
-
 <template>
   <v-card>
     <v-card-title class="d-flex align-center pe-2">
@@ -53,7 +21,6 @@
 
     <v-divider></v-divider>
     <v-data-table v-model:search="search" :items="items">
-
       <template v-slot:item.image="{ item }">
         <v-card class="my-2" elevation="2" rounded>
           <v-img
@@ -66,3 +33,38 @@
     </v-data-table>
   </v-card>
 </template>
+
+<script>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+export default {
+  setup() {
+    const search = ref('');
+    const items = ref([]);
+
+    const fetchItems = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/api/unit-kerja');
+        items.value = response.data.daftarUnitKerja.map(item => ({
+          name: item.name,
+        }));
+      } catch (error) {
+        console.error('Failed to fetch items:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchItems();
+    });
+
+    return {
+      search,
+      items,
+    };
+  },
+};
+</script>
+
+<style scoped>
+</style>

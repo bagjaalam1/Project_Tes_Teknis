@@ -1,152 +1,174 @@
 <script setup>
 import avatar1 from '@images/avatars/avatar-1.png'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
+import axios from 'axios'
 
-const accountData = {
+const route = useRoute()
+const router = useRouter()
+
+const pegawaiData = {
   avatarImg: avatar1,
-  firstName: 'john',
-  lastName: 'Doe',
-  email: 'johnDoe@example.com',
-  org: 'ThemeSelection',
-  phone: '+1 (917) 543-9876',
-  address: '123 Main St, New York, NY 10001',
-  state: 'New York',
-  zip: '10001',
-  country: 'USA',
-  language: 'English',
-  timezone: '(GMT-11:00) International Date Line West',
-  currency: 'USD',
+  nip: '',
+  nama: '',
+  tempatLahir: '',
+  alamat: '',
+  tanggalLahir: null,
+  jenisKelamin: '',
+  golongan: '',
+  eselon: '',
+  jabatan: '',
+  tempatTugas: '',
+  agama: '',
+  unitKerjaId: [],
+  noHp: '',
+  npwp: ''
 }
 
 const refInputEl = ref()
-const accountDataLocal = ref(structuredClone(accountData))
-const isAccountDeactivated = ref(false)
+const pegawaiDataLocal = ref({
+  ...structuredClone(pegawaiData),
+  fotoFile: null
+})
+const unitKerjaItems = ref([])
+const dateMenu = ref(false)
+const formattedTanggalLahir = ref('')
+const isSubmitted = ref(false)
+
+const formatDate = (dateString) => {
+  const timeZone = 'Asia/Bangkok' // Time zone untuk Indochina Time
+  const zonedDate = formatInTimeZone(dateString, timeZone)
+  return format(zonedDate, "EEE MMM dd yyyy HH:mm:ss 'GMT'XXX (zzzz)")
+}
+
+const fetchPegawaiById = async (id) => {
+  try {
+    const response = await axios.get(`http://localhost:3001/api/pegawais/${id}`)
+    const pegawai = response.data
+    pegawaiDataLocal.value = {
+      ...pegawai,
+      avatarImg: pegawai.fotoUrl || avatar1,
+      fotoFile: null
+    }
+    formattedTanggalLahir.value = pegawai.tanggalLahir ? format(new Date(pegawai.tanggalLahir), 'dd-MM-yyyy') : '' // agar mudah dibaca
+  } catch (error) {
+    console.error(error.message)
+  }
+}
 
 const resetForm = () => {
-  accountDataLocal.value = structuredClone(accountData)
+  pegawaiDataLocal.value = structuredClone(pegawaiData)
 }
 
 const changeAvatar = file => {
   const fileReader = new FileReader()
   const { files } = file.target
   if (files && files.length) {
+    pegawaiDataLocal.value.fotoFile = files[0]
     fileReader.readAsDataURL(files[0])
     fileReader.onload = () => {
       if (typeof fileReader.result === 'string')
-        accountDataLocal.value.avatarImg = fileReader.result
+        pegawaiDataLocal.value.avatarImg = fileReader.result
     }
   }
 }
 
 // reset avatar image
 const resetAvatar = () => {
-  accountDataLocal.value.avatarImg = accountData.avatarImg
+  pegawaiDataLocal.value.avatarImg = pegawaiData.avatarImg
 }
 
-const timezones = [
-  '(GMT-11:00) International Date Line West',
-  '(GMT-11:00) Midway Island',
-  '(GMT-10:00) Hawaii',
-  '(GMT-09:00) Alaska',
-  '(GMT-08:00) Pacific Time (US & Canada)',
-  '(GMT-08:00) Tijuana',
-  '(GMT-07:00) Arizona',
-  '(GMT-07:00) Chihuahua',
-  '(GMT-07:00) La Paz',
-  '(GMT-07:00) Mazatlan',
-  '(GMT-07:00) Mountain Time (US & Canada)',
-  '(GMT-06:00) Central America',
-  '(GMT-06:00) Central Time (US & Canada)',
-  '(GMT-06:00) Guadalajara',
-  '(GMT-06:00) Mexico City',
-  '(GMT-06:00) Monterrey',
-  '(GMT-06:00) Saskatchewan',
-  '(GMT-05:00) Bogota',
-  '(GMT-05:00) Eastern Time (US & Canada)',
-  '(GMT-05:00) Indiana (East)',
-  '(GMT-05:00) Lima',
-  '(GMT-05:00) Quito',
-  '(GMT-04:00) Atlantic Time (Canada)',
-  '(GMT-04:00) Caracas',
-  '(GMT-04:00) La Paz',
-  '(GMT-04:00) Santiago',
-  '(GMT-03:30) Newfoundland',
-  '(GMT-03:00) Brasilia',
-  '(GMT-03:00) Buenos Aires',
-  '(GMT-03:00) Georgetown',
-  '(GMT-03:00) Greenland',
-  '(GMT-02:00) Mid-Atlantic',
-  '(GMT-01:00) Azores',
-  '(GMT-01:00) Cape Verde Is.',
-  '(GMT+00:00) Casablanca',
-  '(GMT+00:00) Dublin',
-  '(GMT+00:00) Edinburgh',
-  '(GMT+00:00) Lisbon',
-  '(GMT+00:00) London',
-]
+// fetch unit kerja
+const fetchUnitKerja = async () => {
+  try {
+    const response = await axios.get('http://localhost:3001/api/unit-kerja')
+    unitKerjaItems.value = response.data.daftarUnitKerja.map(item => ({
+      id: item.id,
+      name: item.name
+    }))
+  } catch (error) {
+    console.log(error.message)
+  }
+}
 
-const currencies = [
-  'USD',
-  'EUR',
-  'GBP',
-  'AUD',
-  'BRL',
-  'CAD',
-  'CNY',
-  'CZK',
-  'DKK',
-  'HKD',
-  'HUF',
-  'INR',
-]
+const submitForm = async () => {
+  const formData = new FormData()
+
+  for (const key in pegawaiDataLocal.value) {
+    if (key !== 'avatarImg' && key !== 'fotoFile') {
+      formData.append(key, pegawaiDataLocal.value[key])
+    }
+  }
+
+  if (pegawaiDataLocal.value.fotoFile) {
+    formData.append('foto', pegawaiDataLocal.value.fotoFile)
+  }
+
+  const formDataAsObject = {}
+  formData.forEach((value, key) => {
+    formDataAsObject[key] = value
+  })
+
+  try {
+    const id = route.params.id
+    await axios.put(`http://localhost:3001/api/pegawais/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    isSubmitted.value = true
+    router.push('/dashboard')
+    resetForm()
+  } catch (error) {
+    console.error(error.message)
+  }
+}
+
+const updateFormattedDate = () => {
+  formattedTanggalLahir.value = format(new Date(pegawaiDataLocal.value.tanggalLahir), 'dd-MM-yyyy')
+}
+
+watch(() => pegawaiDataLocal.value.tanggalLahir, (newDate) => {
+  formattedTanggalLahir.value = newDate ? format(new Date(newDate), 'dd-MM-yyyy') : ''
+})
+
+onMounted(() => {
+  fetchUnitKerja()
+  const id = route.params.id
+  if (id) {
+    fetchPegawaiById(id)
+  }
+})
+
+const goBack = () => {
+  router.go(-1)
+}
+
 </script>
 
 <template>
   <VRow>
     <VCol cols="12">
-      <VCard title="Detail Pegawai">
+      <VCard title="Edit Pegawai">
         <VCardText class="d-flex">
           <!-- 👉 Avatar -->
-          <VAvatar
-            rounded="lg"
-            size="100"
-            class="me-6"
-            :image="accountDataLocal.avatarImg"
-          />
+          <VAvatar rounded="lg" size="100" class="me-6" :image="pegawaiDataLocal.avatarImg" />
 
           <!-- 👉 Upload Photo -->
           <form class="d-flex flex-column justify-center gap-5">
             <div class="d-flex flex-wrap gap-2">
-              <VBtn
-                color="primary"
-                @click="refInputEl?.click()"
-              >
-                <VIcon
-                  icon="ri-upload-cloud-line"
-                  class="d-sm-none"
-                />
+              <VBtn color="primary" @click="refInputEl?.click()">
+                <VIcon icon="ri-upload-cloud-line" class="d-sm-none" />
                 <span class="d-none d-sm-block">Upload new photo</span>
               </VBtn>
 
-              <input
-                ref="refInputEl"
-                type="file"
-                name="file"
-                accept=".jpeg,.png,.jpg,GIF"
-                hidden
-                @input="changeAvatar"
-              >
+              <input ref="refInputEl" type="file" name="file" accept=".jpeg,.png,.jpg,GIF" hidden @input="changeAvatar" />
 
-              <VBtn
-                type="reset"
-                color="error"
-                variant="outlined"
-                @click="resetAvatar"
-              >
+              <VBtn type="reset" color="error" variant="outlined" @click="resetAvatar">
                 <span class="d-none d-sm-block">Reset</span>
-                <VIcon
-                  icon="ri-refresh-line"
-                  class="d-sm-none"
-                />
+                <VIcon icon="ri-refresh-line" class="d-sm-none" />
               </VBtn>
             </div>
 
@@ -160,179 +182,99 @@ const currencies = [
 
         <VCardText>
           <!-- 👉 Form -->
-          <VForm class="mt-6">
+          <VForm class="mt-6" @submit.prevent="submitForm">
             <VRow>
-              <!-- 👉 First Name -->
-              <VCol
-                md="6"
-                cols="12"
-              >
-                <VTextField
-                  v-model="accountDataLocal.firstName"
-                  placeholder="John"
-                  label="Name"
-                />
-              </VCol>
-              
-              <VCol
-                md="6"
-                cols="12"
-              >
-                <VTextField
-                  v-model="accountDataLocal.firstName"
-                  placeholder="John"
-                  label="NIP"
-                />
+              <!-- 👉 Name -->
+              <VCol md="6" cols="12">
+                <VTextField v-model="pegawaiDataLocal.nama" placeholder="Name" label="Name" />
               </VCol>
 
-              <!-- 👉 Email -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.email"
-                  label="Tempat Lahir"
-                  placeholder="johndoe@gmail.com"
-                />
+              <!-- 👉 NIP -->
+              <VCol md="6" cols="12">
+                <VTextField v-model="pegawaiDataLocal.nip" placeholder="1234567890" label="NIP" />
               </VCol>
 
-              <!-- 👉 Phone -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.phone"
-                  label="Alamat"
-                  placeholder="+1 (917) 543-9876"
-                />
+              <!-- 👉 Tempat Lahir -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.tempatLahir" label="Tempat Lahir" placeholder="Tempat Lahir" />
               </VCol>
 
-              <!-- 👉 Address -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.address"
-                  label="Tanggal Lahir"
-                  placeholder="123 Main St, New York, NY 10001"
-                />
+              <!-- 👉 Alamat -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.alamat" label="Alamat" placeholder="Alamat" />
               </VCol>
 
-              <!-- 👉 State -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.state"
-                  label="Jenis Kelamin"
-                  placeholder="New York"
-                />
+              <!-- 👉 Tanggal Lahir -->
+              <VCol cols="12" md="6">
+                <div>
+                  <VTextField v-model="formattedTanggalLahir" label="Tanggal Lahir" prepend-icon="ri-calendar-line" readonly @click="dateMenu = true" />
+                  <VMenu v-model="dateMenu" :close-on-content-click="false" activator="parent" transition="scale-transition" offset-y min-width="auto">
+                    <VDatePicker v-model="pegawaiDataLocal.tanggalLahir" no-title scrollable @input="updateFormattedDate">
+                      <template v-slot:actions>
+                        <VBtn text color="primary" @click="dateMenu = false" style="margin-top: -40px">OK</VBtn>
+                      </template>
+                    </VDatePicker>
+                  </VMenu>
+                </div>
               </VCol>
 
-              <!-- 👉 Zip Code -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VSelect
-                  v-model="accountDataLocal.country"
-                  label="Golongan"
-                  :items="['USA', 'Canada', 'UK', 'India', 'Australia']"
-                  placeholder="Select Country"
-                />
+              <!-- 👉 Jenis Kelamin -->
+              <VCol cols="12" md="6">
+                <VRadioGroup v-model="pegawaiDataLocal.jenisKelamin" label="Jenis Kelamin">
+                  <VRadio label="Laki-Laki" value="L"></VRadio>
+                  <VRadio label="Perempuan" value="P"></VRadio>
+                </VRadioGroup>
               </VCol>
 
-              <!-- 👉 Country -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VSelect
-                  v-model="accountDataLocal.country"
-                  label="Eselon"
-                  :items="['USA', 'Canada', 'UK', 'India', 'Australia']"
-                  placeholder="Select Country"
-                />
+              <!-- 👉 Golongan -->
+              <VCol cols="12" md="6">
+                <VSelect v-model="pegawaiDataLocal.golongan" label="Golongan" :items="['Ia', 'Ib', 'Ic', 'Id', 'IIa', 'IIb', 'IIc', 'IId', 'IIIa', 'IIIb', 'IIIc', 'IIId', 'IVa', 'IVb', 'IVc', 'IVd', 'IVe']" placeholder="Golongan" />
               </VCol>
 
-              <!-- 👉 Language -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VSelect
-                  v-model="accountDataLocal.language"
-                  label="Unit Kerja"
-                  placeholder="Jabatan"
-                  :items="['English', 'Spanish', 'Arabic', 'Hindi', 'Urdu']"
-                />
+              <!-- 👉 Eselon -->
+              <VCol cols="12" md="6">
+                <VSelect v-model="pegawaiDataLocal.eselon" label="Eselon" :items="['I', 'II', 'III', 'IV']" placeholder="Eselon" />
               </VCol>
 
-              <!-- 👉 Timezone -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.state"
-                  label="Tempat Tugas"
-                  placeholder="New York"
-                />
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.jabatan" label="Jabatan" placeholder="Jabatan" readonly />
               </VCol>
 
-              <!-- 👉 Currency -->
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.address"
-                  label="Agama"
-                  placeholder="123 Main St, New York, NY 10001"
-                />
+              <!-- 👉 Unit Kerja -->
+              <VCol cols="12" md="6">
+                <VSelect v-model="pegawaiDataLocal.unitKerjaId" label="Unit Kerja" placeholder="Unit Kerja" :items="unitKerjaItems" item-title="name" item-value="id" />
               </VCol>
 
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.address"
-                  label="No. HP"
-                  placeholder="123 Main St, New York, NY 10001"
-                />
+              <!-- 👉 Tempat Tugas -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.tempatTugas" label="Tempat Tugas" placeholder="Tempat Tugas" />
               </VCol>
 
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VTextField
-                  v-model="accountDataLocal.address"
-                  label="NPWP"
-                  placeholder="123 Main St, New York, NY 10001"
-                />
+              <!-- 👉 Agama -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.agama" label="Agama" placeholder="Agama" />
+              </VCol>
+
+              <!-- 👉 No. HP -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.noHp" label="No. HP" placeholder="No. HP" />
+              </VCol>
+
+              <!-- 👉 NPWP -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.npwp" label="NPWP" placeholder="NPWP" />
               </VCol>
 
               <!-- 👉 Form Actions -->
-              <VCol
-                cols="12"
-                class="d-flex flex-wrap gap-4"
-              >
-                <VBtn>Save changes</VBtn>
+              <VCol cols="12" class="d-flex flex-wrap gap-4">
+                <VBtn type="submit">Submit</VBtn>
+                <NuxtLink v-if="isSubmitted" to="/dashboard" style="display: none;">Go to Dashboard</NuxtLink>
 
-                <VBtn
-                  color="secondary"
-                  variant="outlined"
-                  type="reset"
-                  @click.prevent="resetForm"
-                >
+                <VBtn color="secondary" variant="outlined" type="reset" @click.prevent="resetForm">
                   Reset
                 </VBtn>
+
+                <VBtn @click="goBack" color="primary">Back</VBtn>
               </VCol>
             </VRow>
           </VForm>

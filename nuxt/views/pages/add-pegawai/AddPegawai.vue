@@ -1,13 +1,15 @@
 <script setup>
 import avatar1 from '@images/avatars/avatar-1.png'
-import axios from 'axios'
 import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+const router = useRouter()
 
 const pegawaiData = {
   avatarImg: avatar1,
-  nip: '',
+  nip: null,
   nama: '',
   tempatLahir: '',
   alamat: '',
@@ -15,11 +17,12 @@ const pegawaiData = {
   jenisKelamin: '',
   golongan: '',
   eselon: '',
+  jabatan: '',
   tempatTugas: '',
   agama: '',
   unitKerjaId: [],
-  noHp: '',
-  npwp: ''
+  noHp: null,
+  npwp: null,
 }
 
 const refInputEl = ref()
@@ -63,6 +66,7 @@ const fetchUnitKerja = async () => {
       name: item.name
     }))
     console.log('unitKerjaItems:', unitKerjaItems.value);
+    console.log('pegawaiDataLocal', pegawaiDataLocal.value)
   } catch (error) {
     console.log(error.message)
   }
@@ -89,13 +93,12 @@ const submitForm = async () => {
   console.log('FormData contents:', formDataAsObject);
 
   try {
-    // await axios.post('http://localhost:3001/api/pegawais/add', formData, {
-    //   headers: {
-    //     'Content-Type': 'multipart/form-data'
-    //   }
-    // })
+    await axios.post('http://localhost:3001/api/pegawais/add', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     isSubmitted.value = true
-    const router = useRouter()
     router.push('/dashboard')
     resetForm()
   } catch (error) {
@@ -109,10 +112,13 @@ const updateFormattedDate = () => {
 
 watch(() => pegawaiDataLocal.value.tanggalLahir, (newDate) => {
   formattedTanggalLahir.value = newDate ? format(new Date(newDate), 'dd-MM-yyyy') : ''
-  console.log(pegawaiDataLocal.value)
 })
 
 onMounted(fetchUnitKerja)
+
+const goBack = () => {
+  router.go(-1)
+}
 
 </script>
 
@@ -155,7 +161,7 @@ onMounted(fetchUnitKerja)
             <VRow>
               <!-- 👉 Name -->
               <VCol md="6" cols="12">
-                <VTextField v-model="pegawaiDataLocal.nama" placeholder="John" label="Name" />
+                <VTextField v-model="pegawaiDataLocal.nama" placeholder="Name" label="Name" />
               </VCol>
 
               <!-- 👉 NIP -->
@@ -201,14 +207,18 @@ onMounted(fetchUnitKerja)
 
               <!-- 👉 Golongan -->
               <VCol cols="12" md="6">
-                <VSelect v-model="pegawaiDataLocal.golongan" label="Golongan" :items="['I', 'II', 'III', 'IV']"
+                <VSelect v-model="pegawaiDataLocal.golongan" label="Golongan" :items="['Ia', 'Ib', 'Ic', 'Id', 'IIa', 'IIb', 'IIc', 'IId', 'IIIa', 'IIIb', 'IIIc', 'IIId', 'IVa', 'IVb', 'IVc', 'IVd', 'IVe']"
                   placeholder="Golongan" />
               </VCol>
 
               <!-- 👉 Eselon -->
               <VCol cols="12" md="6">
                 <VSelect v-model="pegawaiDataLocal.eselon" label="Eselon"
-                  :items="['Ia', 'Ib', 'IIa', 'IIb', 'IIIa', 'IIIb', 'IVa', 'IVb']" placeholder="Eselon" />
+                  :items="['I', 'II', 'III', 'IV']" placeholder="Eselon" />
+              </VCol>
+
+              <VCol cols="12" md="6">
+                <VTextField v-model="pegawaiDataLocal.jabatan" label="Jabatan" placeholder="Jabatan"/>
               </VCol>
 
               <!-- 👉 Unit Kerja -->
@@ -239,12 +249,15 @@ onMounted(fetchUnitKerja)
 
               <!-- 👉 Form Actions -->
               <VCol cols="12" class="d-flex flex-wrap gap-4">
-                <VBtn type="submit">Submit</VBtn>
+                <VBtn type="submit" color="success">Submit</VBtn>
                 <NuxtLink v-if="isSubmitted" to="/dashboard" style="display: none;">Go to Dashboard</NuxtLink>
 
                 <VBtn color="secondary" variant="outlined" type="reset" @click.prevent="resetForm">
                   Reset
                 </VBtn>
+
+                <VBtn @click="goBack" color="primary">Back</VBtn>
+                
               </VCol>
             </VRow>
           </VForm>

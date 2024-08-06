@@ -26,26 +26,4 @@ import VerticalNavLink from '@layouts/components/VerticalNavLink.vue'
       }"
     />
   </VerticalNavGroup>
-
-  <!-- 👉 Apps & Pages -->
-  <VerticalNavSectionTitle
-    :item="{
-      heading: 'Apps & Pages',
-    }"
-  />
-
-  <VerticalNavLink
-    :item="{
-      title: 'Login',
-      icon: 'ri-login-box-line',
-      to: '/login',
-    }"
-  />
-  <VerticalNavLink
-    :item="{
-      title: 'Register',
-      icon: 'ri-user-add-line',
-      to: '/register',
-    }"
-  />
 </template>

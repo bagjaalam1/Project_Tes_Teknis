@@ -1,36 +1,58 @@
 <script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import authV1MaskDark from '@images/pages/auth-v1-mask-dark.png'
 import authV1MaskLight from '@images/pages/auth-v1-mask-light.png'
 import authV1Tree2 from '@images/pages/auth-v1-tree-2.png'
 import authV1Tree from '@images/pages/auth-v1-tree.png'
+import axios from 'axios'
+
+// Definisikan layout sebagai 'blank' untuk halaman login
+definePageMeta({
+  layout: 'blank',
+})
 
 const form = ref({
   email: '',
   password: '',
-  remember: false,
 })
 
 const vuetifyTheme = useTheme()
+const router = useRouter()
 
 const authThemeMask = computed(() => {
   return vuetifyTheme.global.name.value === 'light' ? authV1MaskLight : authV1MaskDark
 })
 
 const isPasswordVisible = ref(false)
+const loginError = ref('')
 
-definePageMeta({ layout: 'blank' })
+const login = async () => {
+  try {
+    const response = await axios.post('http://localhost:3001/api/login', {
+      email: form.value.email,
+      password: form.value.password
+    })
+    console.log('response data',response.data)
+    // Simpan token dan redirect
+    localStorage.setItem('token', response.data.token)
+    router.push('/dashboard')
+  } catch (error) {
+    console.error('Login failed:', error)
+    loginError.value = 'Login failed: ' + (error.response?.data?.message || 'Unknown error')
+  }
+}
 </script>
 
-<template>
-  <!-- eslint-disable vue/no-v-html -->
 
+
+<template>
   <div class="auth-wrapper d-flex align-center justify-center pa-4">
     <VCard
       class="auth-card pa-4 pt-7"
       max-width="448"
     >
-
       <VCardText class="pt-2">
         <h4 class="text-h4 mb-1">
           Welcome!
@@ -41,7 +63,7 @@ definePageMeta({ layout: 'blank' })
       </VCardText>
 
       <VCardText>
-        <VForm @submit.prevent="() => {}">
+        <VForm @submit.prevent="login">
           <VRow>
             <!-- email -->
             <VCol cols="12">
@@ -62,27 +84,16 @@ definePageMeta({ layout: 'blank' })
                 :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                 @click:append-inner="isPasswordVisible = !isPasswordVisible"
               />
+              <div class="d-flex align-center justify-space-between flex-wrap my-6"></div>
 
-              <!-- remember me checkbox -->
-              <div class="d-flex align-center justify-space-between flex-wrap my-6">
-                <VCheckbox
-                  v-model="form.remember"
-                  label="Remember me"
-                />
-
-                <a
-                  class="text-primary"
-                  href="javascript:void(0)"
-                >
-                  Forgot Password?
-                </a>
-              </div>
+              <!-- error message -->
+              <div v-if="loginError" class="text-danger mb-4">{{ loginError }}</div>
 
               <!-- login button -->
               <VBtn
                 block
                 type="submit"
-                to="/"
+                color="primary"
               >
                 Login
               </VBtn>
@@ -93,7 +104,7 @@ definePageMeta({ layout: 'blank' })
               cols="12"
               class="text-center text-base"
             >
-              <span>New on our platform?</span>
+              <span>Don't have account?</span>
               <NuxtLink
                 class="text-primary ms-2"
                 to="/register"
@@ -101,8 +112,6 @@ definePageMeta({ layout: 'blank' })
                 Create an account
               </NuxtLink>
             </VCol>
-
-
           </VRow>
         </VForm>
       </VCardText>
@@ -127,6 +136,8 @@ definePageMeta({ layout: 'blank' })
     />
   </div>
 </template>
+
+
 
 <style lang="scss">
 @use "@core/scss/template/pages/page-auth";
