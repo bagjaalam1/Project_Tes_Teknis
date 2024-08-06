@@ -21,6 +21,7 @@ const sequelize = require('../config/database')
     jenisKelamin: DataTypes.STRING,
     golongan: DataTypes.STRING,
     eselon: DataTypes.STRING,
+    jabatan: DataTypes.STRING,
     tempatTugas: DataTypes.STRING,
     agama: DataTypes.STRING,
     unitKerjaId: DataTypes.INTEGER,

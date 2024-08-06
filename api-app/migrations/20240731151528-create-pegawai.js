@@ -33,6 +33,9 @@ module.exports = {
       eselon: {
         type: Sequelize.STRING,
       },
+      jabatan: {
+        type: Sequelize.STRING
+      },
       tempatTugas: {
         type: Sequelize.STRING
       },
